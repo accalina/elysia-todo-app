@@ -1,23 +1,37 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { ITodo, TodoDatabase } from "../../database";
-import { GeneralResponse, IResponse } from "../../helper/response";
+import { GeneralResponse, IResponse, TResponse } from "../../helper/response";
 
+const TBody = t.Object({
+    title: t.String({default: "my first todo item"}),
+    isDone: t.Boolean({default: false}),
+    isDelete: t.Boolean({default: false})
+})
+
+const getListParams = t.Object({
+    type: t.Optional(t.String({default: "", description: "should be: '[empty]' / 'done' / 'deleted'"}))
+})
+
+
+const basicSchema = {response:TResponse}
+const bodySchema = {body: TBody, response:TResponse}
+const getListSchema = {response:TResponse, query: getListParams}
 
 export default function RouterTodo(app: Elysia) {
     app.group('/todo', app => app // @ts-ignore
-        .get('/', async ({db}) => await ListTodo(db)) // @ts-ignore
-        .post('/', async ({body, db}) => await CreateTodo(body, db)) // @ts-ignore
-        .get('/:id', async ({db, params}) => await RetrieveTodo(params, db)) // @ts-ignore
-        .put('/:id', async ({params, body, db}) => await UpdateTodo(params, body, db)) // @ts-ignore
-        .patch('/:id', async ({params, body, db}) => await UpdateTodo(params, body, db)) // @ts-ignore
+        .get('/', async ({query, db}) => {return await ListTodo(query, db)}, getListSchema) // @ts-ignore
+        .post('/', async ({body, db}) => {return await CreateTodo(body, db)}, bodySchema) // @ts-ignore
+        .get('/:id', async ({params, db}) => {return await RetrieveTodo(params, db)}, basicSchema) // @ts-ignore
+        .put('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema) // @ts-ignore
+        .patch('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema) // @ts-ignore
     )
 }
 
-async function ListTodo (db: TodoDatabase) {
-    const data = await db.getTodos()
-
+async function ListTodo (query: any, db: TodoDatabase) {
+    const type = query.type || ""
+    const data = await db.getTodos(type)
     return GeneralResponse({
-        message: "Success list todo",
+        message: "Success list todo " + type,
         data: data,
         success: true
     } as IResponse)
@@ -34,7 +48,7 @@ async function RetrieveTodo (params: any, db: TodoDatabase) {
     } as IResponse)
 }
 
-async function CreateTodo(body: any, db: TodoDatabase) {
+async function CreateTodo(body: any, db: TodoDatabase) {    
     const data = await db.addTodos({
         title: body.title,
         isDone: false,

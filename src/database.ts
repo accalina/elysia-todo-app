@@ -24,8 +24,13 @@ export class TodoDatabase{
         )
     }
 
-    async getTodos() {
-        return this.db.query('SELECT * from todos').all()
+    async getTodos(type?:string) {
+        if (type && type == 'done'){
+            return this.db.query('SELECT * from todos where isDone = true').all()
+        } else if (type && type == 'deleted') {
+            return this.db.query('SELECT * from todos where isDelete = true').all()
+        }
+        return this.db.query('SELECT * from todos where isDone = false and isDelete = false').all()
     }
 
     async retrieveTodo(id:number) {
