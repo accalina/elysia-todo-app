@@ -1,0 +1,16 @@
+version: '3.5'
+services:
+  elysia-todo:
+    image: ghcr.io/accalina/elysia-todo:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: elysia-todo
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: netstat -tulpn | grep 300 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 2
+
