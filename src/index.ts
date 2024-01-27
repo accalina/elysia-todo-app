@@ -4,7 +4,6 @@ import { staticPlugin } from "@elysiajs/static"
 import { html } from "@elysiajs/html"
 import { swagger } from "@elysiajs/swagger"
 import Router from "./router";
-import { TodoDatabase } from "./database";
 
 
 const app = new Elysia()
@@ -21,7 +20,6 @@ app.use(swagger({
     }
   }
 }))
-app.decorate('db', new TodoDatabase())
 app.get('/favicon.ico', () => Bun.file('public/favicon.ico'))
 Router(app)
 app.listen(3000)

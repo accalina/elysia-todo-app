@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
-import { ITodo, TodoDatabase } from "../../database";
-import { GeneralResponse, IResponse, TResponse } from "../../helper/response";
+import { ITodo, TodoDatabase, TodoInstance } from "../../models/todo";
+import { GeneralResponse, IResponse, TResponse } from "../../helpers/response";
 
 const TBody = t.Object({
     title: t.String({default: "my first todo item"}),
@@ -18,12 +18,14 @@ const bodySchema = {body: TBody, response:TResponse}
 const getListSchema = {response:TResponse, query: getListParams}
 
 export default function RouterTodo(app: Elysia) {
-    app.group('/todo', app => app // @ts-ignore
-        .get('/', async ({query, db}) => {return await ListTodo(query, db)}, getListSchema) // @ts-ignore
-        .post('/', async ({body, db}) => {return await CreateTodo(body, db)}, bodySchema) // @ts-ignore
-        .get('/:id', async ({params, db}) => {return await RetrieveTodo(params, db)}, basicSchema) // @ts-ignore
-        .put('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema) // @ts-ignore
-        .patch('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema) // @ts-ignore
+    app
+    .decorate('db', TodoInstance)
+    .group('/todo', app => app
+        .get('/', async ({query, db}) => {return await ListTodo(query, db)}, getListSchema)
+        .post('/', async ({body, db}) => {return await CreateTodo(body, db)}, bodySchema)
+        .get('/:id', async ({params, db}) => {return await RetrieveTodo(params, db)}, basicSchema)
+        .put('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema)
+        .patch('/:id', async ({params, body, db}) => {return await UpdateTodo(params, body, db)}, bodySchema)
     )
 }
 
